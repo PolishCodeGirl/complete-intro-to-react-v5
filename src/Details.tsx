@@ -1,16 +1,21 @@
 import React from "react";
-import pet from "@frontendmasters/pet";
-import { navigate } from "@reach/router";
+import pet, { Photo } from "@frontendmasters/pet";
+import { navigate, RouteComponentProps } from "@reach/router";
 import Carousel from "./Carousel";
 import Modal from "./Modal";
 import ErrorBoundary from "./ErrorBoundary";
 import ThemeContext from "./ThemeContext";
 
-class Details extends React.Component {
-  state = { loading: true, showModal: false };
-  componentDidMount() {
+class Details extends React.Component<RouteComponentProps<{ id: string }>> {
+  public state = { loading: true, showModal: false, animal: "", breed: "", location: "", description: "", media: [] as Photo[], name: "", url: "" };
+  public componentDidMount() {
+    if (!this.props.id) {
+      navigate('/');
+      return;
+    }
+
     pet
-      .animal(this.props.id)
+      .animal(+this.props.id)
       .then(({ animal }) => {
         this.setState({
           url: animal.url,
@@ -18,16 +23,16 @@ class Details extends React.Component {
           animal: animal.type,
           location: `${animal.contact.address.city}, ${
             animal.contact.address.state
-          }`,
+            }`,
           description: animal.description,
           media: animal.photos,
           breed: animal.breeds.primary,
           loading: false
         });
       })
-      .catch(err => this.setState({ error: err }));
+      .catch((err: Error) => this.setState({ error: err }));
   }
-  toggleModal = () => this.setState({ showModal: !this.state.showModal });
+  public toggleModal = () => this.setState({ showModal: !this.state.showModal });
   adopt = () => navigate(this.state.url);
   render() {
     if (this.state.loading) {
@@ -76,7 +81,7 @@ class Details extends React.Component {
   }
 }
 
-export default function DetailsErrorBoundary(props) {
+export default function DetailsErrorBoundary(props: RouteComponentProps<{ id: string }>) {
   return (
     <ErrorBoundary>
       <Details {...props} />
